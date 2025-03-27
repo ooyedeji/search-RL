@@ -1,0 +1,45 @@
+__pycache__/
+*.py[cod]
+*.class
+
+# Virtual environment
+venv/
+env/
+*.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs and debug files
+logs/
+*.log
+*.out
+*.err
+
+# Python-specific
+*.swp
+*.swo
+
+# Data and model checkpoints
+models/
+*.pth
+*.pt
+*.h5
+*.ckpt
+
+# Matplotlib and visualization cache
+.figure/
+plot.png
+
+# VS Code settings
+.vscode/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Test files and directories
+test*

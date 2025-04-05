@@ -7,12 +7,9 @@ from agent import Agent
 maze = Maze(grid_path="grids/default.txt", random_initial=False)
 agent = Agent()
 
-# Initialize the model
-model = agent.model
-
 # Load the saved model weights
-model.load_state_dict(torch.load("models/model_0.pth"))
-model.eval()
+agent.model = torch.load("models/model_0.pth", weights_only=False)
+agent.model.eval()
 
 while True:
     # Get current state
@@ -25,6 +22,7 @@ while True:
     reward, status = maze.play_step(agent.directions[action_id])
 
     if status != MazeStatus.RUNNING:
+        pygame.time.wait(3_000)
         break
 
 print(f"Score: {maze.total_reward:.2f}")

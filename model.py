@@ -1,9 +1,10 @@
+import os
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-import os
-import numpy as np
+from maze import MazeStatus
 
 
 class Linear_QNet(nn.Module):
@@ -27,11 +28,11 @@ class Linear_QNet(nn.Module):
 
         return x
 
-    def save(self, file_path="./models/model.pth"):
+    def save(self, file_path="models/model.pth"):
         if not os.path.exists(os.path.dirname(file_path)):
             os.makedirs(os.path.dirname(file_path))
 
-        torch.save(self.state_dict(), file_path)
+        torch.save(self, file_path)
 
 
 class QTrainer:
@@ -63,7 +64,7 @@ class QTrainer:
         # Update Q-values based on rewards and the Bellman equation
         for i in range(len(status)):
             Q_sa[i, action[i]] = reward[i]
-            if status[i].value is None:
+            if status[i] != MazeStatus.RUNNING:
                 Q_sa[i, action[i]] += self.gamma * torch.max(Q_sa_next[i])
 
         # Backpropagate the loss to compute gradients

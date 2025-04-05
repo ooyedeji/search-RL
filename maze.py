@@ -96,16 +96,6 @@ class Maze:
         self.random_initial = np.atleast_1d(random_initial)
         self.reset()
 
-        # Initialize screen
-        screen_width = self.width * self.GRID_SIZE
-        screen_height = self.height * self.GRID_SIZE
-        self.screen = pygame.display.set_mode((screen_width, screen_height))
-        pygame.display.set_caption(self.__class__.__name__)
-        self.clock = pygame.time.Clock()
-
-        # Update UI
-        self.update_ui()
-
     def reset(self):
         self.walls: list[Point] = []
         self.goal: Point | None = None
@@ -114,8 +104,11 @@ class Maze:
 
         # Read search problem from file
         with open(self.grid_path, mode="r") as file:
+            max_width = 0
             for row_idx, line in enumerate(file.readlines()):
-                for col_idx, symbol in enumerate(line.removesuffix("\n")):
+                line = line.removesuffix("\n")
+                max_width = len(line) if max_width < len(line) else max_width
+                for col_idx, symbol in enumerate(line):
                     character = Character.get_character_by_symbol(symbol)
                     point = Point(col_idx, row_idx)
 
@@ -126,8 +119,9 @@ class Maze:
                     elif character == Character.GOAL:
                         self.goal = point
 
-                self.width = max(col_idx + 1, getattr(self, "width", 0))
-            self.height = row_idx + 1
+        self.width = max_width
+        self.height = row_idx + 1
+        self.max_iteration = (self.get_env_state() == REWARD_PATH).sum()
 
         # Set maze info
         self.iteration = 0
@@ -140,6 +134,16 @@ class Maze:
             self.player = Point(*player_coord)
         if self.random_initial[-1]:
             self.goal = Point(*goal_coord)
+
+        # Initialize screen
+        screen_width = self.width * self.GRID_SIZE
+        screen_height = self.height * self.GRID_SIZE
+        self.screen = pygame.display.set_mode((screen_width, screen_height))
+        pygame.display.set_caption(self.__class__.__name__)
+        self.clock = pygame.time.Clock()
+
+        # Update UI
+        self.update_ui()
 
     def get_env_state(self, show_explored=True) -> np.ndarray:
         state = np.ones((self.width, self.height)) * REWARD_PATH
@@ -334,7 +338,7 @@ class Maze:
     def _get_status(self):
         if self.is_target():
             status = MazeStatus.WIN
-        elif self.iteration > (self.get_env_state() == REWARD_PATH).sum():
+        elif self.iteration > self.max_iteration:
             status = MazeStatus.LOSE
         else:
             status = MazeStatus.RUNNING
@@ -377,7 +381,7 @@ if __name__ == "__main__":
     while True:
         reward, status = maze.play_step()
 
-        if status.value is not None:
+        if status != MazeStatus.RUNNING:
             break
 
     pygame.quit()

@@ -1,6 +1,13 @@
+import os
+import random
 import numpy as np
 from maze import Maze, MazeStatus
 from agent import Agent
+from utils import plot
+
+GRIDS = [grid for grid in os.listdir("grids") if grid.startswith("grid_")]
+AVERAGING_WINDOW = 50
+EARLY_STOP = 200
 
 
 def qtrain():
@@ -8,9 +15,10 @@ def qtrain():
     scores = []
     mean_scores = []
     win_streak = 0
+    max_streak = 0
 
     # Initialize maze board and AI agent
-    maze = Maze(random_initial=True)
+    maze = Maze(grid_path="grids/grid_00.txt", random_initial=True)
     agent = Agent()
 
     while True:
@@ -30,14 +38,14 @@ def qtrain():
         # Train on short memory
         agent.train_short_memory()
 
-        if status.value is not None:
+        if status != MazeStatus.RUNNING:
             # Train on long memory and update maze episode count
             agent.train_long_memory()
             agent.n_episode += 1
 
             # Update scores
             scores.append(maze.total_reward)
-            mean_score = np.mean(scores[-50:])
+            mean_score = np.mean(scores[-AVERAGING_WINDOW:])
             mean_scores.append(mean_score)
             if status == MazeStatus.WIN:
                 win_streak += 1
@@ -45,10 +53,11 @@ def qtrain():
                 win_streak = 0
 
             # Reset board
+            maze.grid_path = "grids/" + random.choice(GRIDS)
             maze.reset()
 
             # Save best model
-            if win_streak > 0 and win_streak % 50 == 0:
+            if win_streak > 0 and win_streak % AVERAGING_WINDOW == 0:
                 agent.model.save(f"models/model_0.pth")
 
             # Print progress
@@ -61,7 +70,7 @@ def qtrain():
             )
 
         # Stop if the mean score continuously decreases
-        if win_streak >= 200:
+        if win_streak >= EARLY_STOP:
             print("QNet training completed.")
             agent.model.save(f"models/model_1.pth")
             break

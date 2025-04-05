@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+from IPython.display import clear_output
 import numpy as np
 
 
@@ -28,3 +30,20 @@ def flood_orthogonal(image: np.ndarray, seed_point: tuple[int]):
                 queue.append((i, j))
 
     return filled_image
+
+
+def plot(scores, mean_scores, streaks):
+    clear_output(wait=True)
+    plt.clf()
+    plt.title(f"Agent training (Win streak: {streaks[0]} | max: {streaks[1]})")
+
+    plt.plot(scores, label="Score")
+    plt.plot(mean_scores, label="Mean Score")
+    record = [max(scores[: i + 1]) for i in range(len(scores))]
+    plt.plot(record, label="Record")
+
+    plt.xlabel("Episode")
+    plt.ylabel("Score")
+    plt.legend()
+
+    plt.pause(0.1)

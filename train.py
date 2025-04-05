@@ -51,6 +51,8 @@ def qtrain():
                 win_streak += 1
             else:
                 win_streak = 0
+            max_streak = win_streak if win_streak > max_streak else max_streak
+            streaks = [win_streak, max_streak]
 
             # Reset board
             maze.grid_path = "grids/" + random.choice(GRIDS)
@@ -68,6 +70,7 @@ def qtrain():
                 f"-- Record: {max(scores):.1f}",
                 f"-- win_streak: {win_streak}",
             )
+            plot(scores=scores, mean_scores=mean_scores, streaks=streaks)
 
         # Stop if the mean score continuously decreases
         if win_streak >= EARLY_STOP:
